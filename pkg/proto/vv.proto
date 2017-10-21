@@ -12,6 +12,7 @@ service VvServer {
   // 打开文件，返回文件修改流
   // TODO 打开大文件
   rpc OpenFile (OpenFileRequest) returns (stream OpenFileReply) {}
+  rpc OpenFileStream (stream OpenFileRequest) returns (stream OpenFileReply) {}
 }
 
 message PingRequest {
@@ -26,6 +27,7 @@ message OpenFileRequest {
   string fileName = 1;
   bytes content = 2;
   string dir = 3;
+  bool isEnd = 4;
 }
 
 message OpenFileReply {
@@ -37,7 +39,8 @@ message OpenFileReply {
 // 握手的header
 message ProtoHeader {
   string version = 1;
-  string token = 2;
+  string user = 2;
+  string password = 5;
   enum ServerKind {
     UNKNOWN_SERVER_KIND = 0;
     SERVER = 1;
@@ -50,4 +53,17 @@ message ProtoHeader {
   }
   ServerKind serverKind = 3;
   ConnKind connKind = 4;
+}
+
+
+service VvRegistry {
+  rpc OpenListen (OpenListenRequest) returns (stream OpenListenReply) {}
+}
+
+message OpenListenRequest {
+  string user = 1;
+}
+
+message OpenListenReply {
+    
 }

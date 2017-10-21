@@ -7,19 +7,21 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wangkechun/vv/pkg/header"
 	pb "github.com/wangkechun/vv/pkg/proto"
-	"github.com/wangkechun/vv/pkg/token"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	pbb "gopkg.in/cheggaaa/pb.v1"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
+	"qiniupkg.com/x/log.v7"
 	"time"
 )
 
 const maxEditFileSize = 20 * 1024 * 1024
+const splitFileSize = 1024 * 100
 
 // Client 组件
 type Client struct {
@@ -30,9 +32,10 @@ type Client struct {
 
 // Config Client 配置
 type Config struct {
-	RegistryAddr string
-	Name         string
-	FilePath     string
+	Name            string
+	FilePath        string
+	RegistryAddrTCP string
+	RegistryAddrRPC string
 }
 
 // New 返回一个Client
@@ -49,7 +52,9 @@ func (r *Client) Run() (err error) {
 		r.args.Dir = filepath.Dir(f)
 		r.stat, err = os.Stat(f)
 		if os.IsNotExist(err) {
-			file, err := os.Create(f)
+			log.Info("create", f)
+			var file *os.File
+			file, err = os.Create(f)
 			if err != nil {
 				return errors.Wrap(err, "create file failed")
 			}
@@ -67,32 +72,81 @@ func (r *Client) Run() (err error) {
 			return errors.Wrap(err, "open file failed")
 		}
 	}
-	conn, err := net.Dial("tcp", r.cfg.RegistryAddr)
+	log.Info("dial", r.cfg.RegistryAddrTCP, r.cfg.Name)
+	conn, err := net.Dial("tcp", r.cfg.RegistryAddrTCP)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry")
 	}
 	err = header.WriteHeader(conn, &pb.ProtoHeader{
 		Version:    "1",
-		Token:      token.GetServerToken(),
+		User:       r.cfg.Name,
 		ServerKind: pb.ProtoHeader_CLIENT,
 		ConnKind:   pb.ProtoHeader_DIAL,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry: write header")
 	}
-	gconn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithDialer(func(string, time.Duration) (net.Conn, error) {
-		return conn, nil
-	}))
-	client := pb.NewVvServerClient(gconn)
 	ctx := context.Background()
-	pingReply, err := client.Ping(ctx, &pb.PingRequest{Name: r.cfg.Name})
-	if err != nil {
-		return errors.Wrap(err, "server reply")
+	var client pb.VvServerClient
+	for i := 0; i < 5; i++ {
+		err := func() error {
+			gconn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithDialer(func(string, time.Duration) (net.Conn, error) {
+				return conn, nil
+			}))
+			client = pb.NewVvServerClient(gconn)
+			ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+			defer cancel()
+			pingReply, err := client.Ping(ctx, &pb.PingRequest{Name: r.cfg.Name})
+			if err != nil {
+				return errors.Wrap(err, "server reply")
+			}
+			fmt.Println("file will open in ", pingReply.Name)
+			return nil
+		}()
+		if err == nil {
+			break
+		}
+		if grpc.Code(errors.Cause(err)) == codes.Unavailable {
+			continue
+		}
+		return err
 	}
-	fmt.Println("file will open in ", pingReply.Name)
-	fileClient, err := client.OpenFile(ctx, &r.args)
-	if err != nil {
-		return errors.Wrap(err, "server reply")
+	var fileClient pb.VvServer_OpenFileClient
+	if len(r.args.Content) > splitFileSize {
+		log.Info("start stream push")
+		arg := r.args
+		buf := arg.Content
+		client, err := client.OpenFileStream(ctx)
+		if err != nil {
+			return errors.Wrap(err, "server reply")
+		}
+		bar := pbb.StartNew(len(buf))
+		for i := 0; i < len(buf); i += splitFileSize {
+			end := i + splitFileSize
+			if end > len(buf) {
+				end = len(buf)
+			}
+			arg.Content = buf[i:end]
+			err = client.Send(&arg)
+			bar.Set(end)
+			if err != nil {
+				return errors.Wrap(err, "client.Send")
+			}
+		}
+		bar.FinishPrint("send file success!")
+		arg.Content = nil
+		arg.IsEnd = true
+		err = client.Send(&arg)
+		if err != nil {
+			return errors.Wrap(err, "client.Send")
+		}
+		fileClient = client
+		r.args.Content = buf
+	} else {
+		fileClient, err = client.OpenFile(ctx, &r.args)
+		if err != nil {
+			return errors.Wrap(err, "server reply")
+		}
 	}
 	for {
 		openFileReply, err := fileClient.Recv()
@@ -109,6 +163,7 @@ func (r *Client) Run() (err error) {
 		if err != nil {
 			return errors.Wrap(err, "apply patch error")
 		}
+
 	}
 	return nil
 }
@@ -117,10 +172,11 @@ func (r *Client) applyOpenFileReply(reply *pb.OpenFileReply) (err error) {
 	if !reply.IsBsdiff {
 		return ioutil.WriteFile(r.cfg.FilePath, reply.Content, r.stat.Mode())
 	}
+	log.Infof("apply diff, file size %d, patch size %d", len(r.args.Content), len(reply.Content))
 	newFile := &bytes.Buffer{}
 	err = binarydist.Patch(bytes.NewReader(r.args.Content), newFile, bytes.NewReader(reply.Content))
 	if err != nil {
 		return errors.Wrap(err, "patch error")
 	}
-	return ioutil.WriteFile(r.cfg.FilePath, reply.Content, r.stat.Mode())
+	return ioutil.WriteFile(r.cfg.FilePath, newFile.Bytes(), r.stat.Mode())
 }

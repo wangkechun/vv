@@ -12,11 +12,11 @@ func TestReadWriteHeader(t *testing.T) {
 	server, client := net.Pipe()
 	go WriteHeader(client, &pb.ProtoHeader{
 		Version:    "1",
-		Token:      "123",
+		User:       "123",
 		ServerKind: pb.ProtoHeader_CLIENT,
 		ConnKind:   pb.ProtoHeader_DIAL,
 	})
 	header, err := ReadHeader(server)
 	assert.Nil(err)
-	assert.Equal(header.Token, "123")
+	assert.Equal(header.User, "123")
 }

@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/wangkechun/vv/pkg/client"
-	"os"
 )
 
 var clientCmd = &cobra.Command{
@@ -18,9 +17,11 @@ var clientEditCmd = &cobra.Command{
 		if len(args) == 0 {
 			return errors.New("not file specified")
 		}
+		clientEditCmdCfg.RegistryAddrRPC = defaultRegistryRPC
+		clientEditCmdCfg.RegistryAddrTCP = defaultRegistryTCP
 		clientEditCmdCfg.FilePath = args[0]
 		if clientEditCmdCfg.Name == "" {
-			clientEditCmdCfg.Name, _ = os.Hostname()
+			clientEditCmdCfg.Name = defaultName
 		}
 		fmt.Printf("vv client [%s] started\n", clientEditCmdCfg.Name)
 		return client.New(clientEditCmdCfg.Config).Run()
@@ -34,5 +35,4 @@ func init() {
 	clientCmd.AddCommand(clientEditCmd)
 	RootCmd.AddCommand(clientCmd)
 	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.Name, "name", "n", "", "client name, default is hostname")
-	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.RegistryAddr, "registry_addr", "r", "127.0.0.1:6655", "registry addr to connect")
 }
