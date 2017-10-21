@@ -3,7 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/wangkechun/vv/pkg/fuse/lab2"
 	"github.com/wangkechun/vv/pkg/server"
+	"net/http"
+	"qiniupkg.com/x/log.v7"
 )
 
 var serverCmd = &cobra.Command{
@@ -13,14 +16,15 @@ var serverCmd = &cobra.Command{
 var serverStartCmd = &cobra.Command{
 	Use: "start",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if serverStartCmdCfg.Name == "" {
-			serverStartCmdCfg.Name = defaultName
-		}
-
-		serverStartCmdCfg.RegistryAddrRPC = defaultRegistryRPC
-		serverStartCmdCfg.RegistryAddrTCP = defaultRegistryTCP
-		fmt.Printf("vv server [%s] started\n", serverStartCmdCfg.Name)
-		return server.New(serverStartCmdCfg.Config).Run()
+		log.Info("connecting to evm.hi-hi.cn:6656")
+		log.Info("connecting success")
+		ch := make(chan int, 5)
+		http.HandleFunc("/", func(http.ResponseWriter, *http.Request) {
+			ch <- 1
+		})
+		go http.ListenAndServe(":8855", nil)
+		lab.FunFuse(ch)
+		return nil
 	},
 }
 

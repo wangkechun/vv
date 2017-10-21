@@ -2,6 +2,7 @@ package fuse
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hanwen/go-fuse/fuse"
@@ -105,8 +106,15 @@ func (n *memNode) Open(flags uint32, context *fuse.Context) (fuseFile nodefs.Fil
 	return NewDataFile(n.file), fuse.OK
 }
 
+var f, _ = os.OpenFile("/Users/wkc/qbox/ava/1", os.O_CREATE|os.O_WRONLY, 0600)
+
+func write(s string) {
+	f.Write([]byte(s + "\n"))
+	f.Sync()
+}
 func (n *memNode) Write(file nodefs.File, data []byte, off int64, context *fuse.Context) (written uint32, code fuse.Status) {
-	log.Infof("memNode.Write %o %s", file, n.fs.Name, off)
+	log.Infof("memNode.Write %v %v %v", file, n.fs.Name, off)
+	write(fmt.Sprintf("apply file %v", n.fs.Name))
 	// if file != nil {
 	// 	return file.Write(data, off)
 	// }
