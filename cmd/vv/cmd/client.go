@@ -34,5 +34,5 @@ func init() {
 	clientCmd.AddCommand(clientEditCmd)
 	RootCmd.AddCommand(clientCmd)
 	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.Name, "name", "n", "", "client name, default is hostname")
-	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.RegistryAddr, "registry_addr", "r", "127.0.0.1:6655", "registry addr to connect")
+	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.RegistryAddr, "registry_addr", "r", DefaultRegistry, "registry addr to connect")
 }

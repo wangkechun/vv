@@ -29,5 +29,5 @@ func init() {
 	serverCmd.AddCommand(serverStartCmd)
 	RootCmd.AddCommand(serverCmd)
 	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.Name, "name", "n", "", "server name, default is hostname")
-	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr, "registry_addr", "r", "127.0.0.1:6655", "registry addr to connect")
+	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr, "registry_addr", "r", DefaultRegistry, "registry addr to connect")
 }
