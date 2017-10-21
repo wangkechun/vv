@@ -155,7 +155,7 @@ func (r *Server) Run() (err error) {
 				}
 				header.WriteHeader(conn, &pb.ProtoHeader{
 					ConnKind: pb.ProtoHeader_LISTEN,
-					User:     "123456",
+					User:     r.cfg.Name,
 				})
 				go func() {
 					err = s.Serve(&listen{conn: conn})

@@ -150,6 +150,8 @@ func (r *Register) OpenListen(in *pb.OpenListenRequest, stream pb.VvRegistry_Ope
 		log.Info("OpenListen recv")
 		err := stream.Send(&pb.OpenListenReply{})
 		if err != nil {
+			log.Error("OpenListen send err", err)
+			ch <- struct{}{}
 			return err
 		}
 	}

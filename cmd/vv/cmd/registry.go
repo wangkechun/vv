@@ -12,8 +12,8 @@ var registerCmd = &cobra.Command{
 var registerStartCmd = &cobra.Command{
 	Use: "start",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		registerStartCmdCfg.RegistryAddrRPC = "127.0.0.1:6655"
-		registerStartCmdCfg.RegistryAddrTCP = "127.0.0.1:6656"
+		registerStartCmdCfg.RegistryAddrTCP = "0.0.0.0:6655"
+		registerStartCmdCfg.RegistryAddrRPC = "0.0.0.0:6656"
 		return registry.New(registerStartCmdCfg.Config).Run()
 	},
 }

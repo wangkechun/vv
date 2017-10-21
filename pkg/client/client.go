@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wangkechun/vv/pkg/header"
 	pb "github.com/wangkechun/vv/pkg/proto"
-	"github.com/wangkechun/vv/pkg/token"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,6 +15,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"qiniupkg.com/x/log.v7"
 	"time"
 )
 
@@ -50,6 +50,7 @@ func (r *Client) Run() (err error) {
 		r.args.Dir = filepath.Dir(f)
 		r.stat, err = os.Stat(f)
 		if os.IsNotExist(err) {
+			log.Info("create", f)
 			var file *os.File
 			file, err = os.Create(f)
 			if err != nil {
@@ -69,13 +70,14 @@ func (r *Client) Run() (err error) {
 			return errors.Wrap(err, "open file failed")
 		}
 	}
+	log.Info("dial", r.cfg.RegistryAddrTCP, r.cfg.Name)
 	conn, err := net.Dial("tcp", r.cfg.RegistryAddrTCP)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry")
 	}
 	err = header.WriteHeader(conn, &pb.ProtoHeader{
 		Version:    "1",
-		User:       token.GetServerToken(),
+		User:       r.cfg.Name,
 		ServerKind: pb.ProtoHeader_CLIENT,
 		ConnKind:   pb.ProtoHeader_DIAL,
 	})

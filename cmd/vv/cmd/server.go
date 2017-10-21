@@ -17,7 +17,9 @@ var serverStartCmd = &cobra.Command{
 		if serverStartCmdCfg.Name == "" {
 			serverStartCmdCfg.Name, _ = os.Hostname()
 		}
-		serverStartCmdCfg.Name = "123456"
+		if serverStartCmdCfg.Name == "" {
+			serverStartCmdCfg.Name, _ = os.Hostname()
+		}
 		serverStartCmdCfg.RegistryAddrRPC = defaultRegistryRPC
 		serverStartCmdCfg.RegistryAddrTCP = defaultRegistryTCP
 		fmt.Printf("vv server [%s] started\n", serverStartCmdCfg.Name)

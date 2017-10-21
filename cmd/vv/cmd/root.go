@@ -72,8 +72,9 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	} else {
-		fmt.Println("ReadInConfig error", viper.ConfigFileUsed())
-		os.Exit(1)
 	}
+	// } else {
+	// 	fmt.Println("ReadInConfig error", viper.ConfigFileUsed())
+	// 	os.Exit(1)
+	// }
 }
