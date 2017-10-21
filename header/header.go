@@ -1,4 +1,4 @@
-package registry
+package header
 
 import (
 	"encoding/binary"
@@ -10,7 +10,7 @@ import (
 
 const maxHeaderSize = 1024
 
-func readHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
+func ReadHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	var dataLength uint32
 	err = binary.Read(conn, binary.BigEndian, &dataLength)
 	if err != nil {
@@ -35,7 +35,7 @@ func readHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	return h, nil
 }
 
-func writeHeader(conn net.Conn, h *pb.ProtoHeader) (err error) {
+func WriteHeader(conn net.Conn, h *pb.ProtoHeader) (err error) {
 	buf, err := proto.Marshal(h)
 	if err != nil {
 		return errors.Wrap(err, "writeHeader: proto.Marshal")

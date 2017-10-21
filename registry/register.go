@@ -3,6 +3,7 @@ package registry
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/wangkechun/vv/header"
 	pb "github.com/wangkechun/vv/proto"
 	"io"
 	"net"
@@ -42,7 +43,7 @@ func New(cfg Config) *Register {
 
 // TODO: 如何管理关闭的连接
 func (r *Register) handleConn(conn net.Conn) (err error) {
-	header, err := readHeader(conn)
+	header, err := header.ReadHeader(conn)
 	if err != nil {
 		return errors.Wrap(err, "registry: readHeader")
 	}
