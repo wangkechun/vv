@@ -17,6 +17,7 @@ var serverStartCmd = &cobra.Command{
 		if serverStartCmdCfg.Name == "" {
 			serverStartCmdCfg.Name, _ = os.Hostname()
 		}
+		serverStartCmdCfg.Name = "123456"
 		fmt.Printf("vv server [%s] started\n", serverStartCmdCfg.Name)
 		return server.New(serverStartCmdCfg.Config).Run()
 	},
@@ -30,4 +31,5 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.Name, "name", "n", "", "server name, default is hostname")
 	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr, "registry_addr", "r", DefaultRegistry, "registry addr to connect")
+	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr2, "registry_addr2", "R", DefaultRegistry2, "registry addr to connect")
 }

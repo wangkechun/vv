@@ -1,3 +1,4 @@
 package cmd
 
-const DefaultRegistry = "evm.hi-hi.cn:6655"
+const DefaultRegistry = "127.0.0.1:6655"
+const DefaultRegistry2 = "127.0.0.1:6656"

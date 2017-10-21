@@ -37,7 +37,8 @@ message OpenFileReply {
 // 握手的header
 message ProtoHeader {
   string version = 1;
-  string token = 2;
+  string user = 2;
+  string password = 5;
   enum ServerKind {
     UNKNOWN_SERVER_KIND = 0;
     SERVER = 1;
@@ -50,4 +51,17 @@ message ProtoHeader {
   }
   ServerKind serverKind = 3;
   ConnKind connKind = 4;
+}
+
+
+service VvRegistry {
+  rpc OpenListen (OpenListenRequest) returns (stream OpenListenReply) {}
+}
+
+message OpenListenRequest {
+  string user = 1;
+}
+
+message OpenListenReply {
+    
 }

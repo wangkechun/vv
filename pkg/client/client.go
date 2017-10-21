@@ -16,6 +16,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"qiniupkg.com/x/log.v7"
 	"time"
 )
 
@@ -73,23 +74,45 @@ func (r *Client) Run() (err error) {
 	}
 	err = header.WriteHeader(conn, &pb.ProtoHeader{
 		Version:    "1",
-		Token:      token.GetServerToken(),
+		User:       token.GetServerToken(),
 		ServerKind: pb.ProtoHeader_CLIENT,
 		ConnKind:   pb.ProtoHeader_DIAL,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry: write header")
 	}
-	gconn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithDialer(func(string, time.Duration) (net.Conn, error) {
-		return conn, nil
-	}))
-	client := pb.NewVvServerClient(gconn)
 	ctx := context.Background()
-	pingReply, err := client.Ping(ctx, &pb.PingRequest{Name: r.cfg.Name})
-	if err != nil {
-		return errors.Wrap(err, "server reply")
+	var client pb.VvServerClient
+	for i := 0; i < 20; i++ {
+		log.Info("loop", i)
+		err := func() error {
+			log.Info("1")
+			gconn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithDialer(func(string, time.Duration) (net.Conn, error) {
+				return conn, nil
+			}))
+			log.Info("1")
+			client = pb.NewVvServerClient(gconn)
+			log.Info("1")
+			ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+			defer cancel()
+			pingReply, err := client.Ping(ctx, &pb.PingRequest{Name: r.cfg.Name})
+			log.Info("1")
+			if err != nil {
+				return errors.Wrap(err, "server reply")
+			}
+			fmt.Println("file will open in ", pingReply.Name)
+			return nil
+		}()
+		if err == nil {
+			break
+		}
+		if grpc.Code(errors.Cause(err)) == codes.Unavailable {
+			log.Info("continue")
+			continue
+		}
+		return err
 	}
-	fmt.Println("file will open in ", pingReply.Name)
+
 	fileClient, err := client.OpenFile(ctx, &r.args)
 	if err != nil {
 		return errors.Wrap(err, "server reply")
