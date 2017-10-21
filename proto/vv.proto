@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.github.wangkechun.vv";
+option java_outer_classname = "VvProto";
+
+package vv;
+
+service VvServer {
+  // 握手消息
+  rpc Ping (PingRequest) returns (PingReply) {}
+  // 打开文件，返回文件修改流
+  // TODO 打开大文件
+  rpc OpenFile (OpenFileRequest) returns (stream OpenFileReply) {}
+}
+
+message PingRequest {
+  string name = 1;
+}
+
+message PingReply {
+  string name = 1;
+}
+
+message OpenFileRequest {
+  string fileName = 1;
+  bytes content = 2;
+  string dir = 3;
+}
+
+message OpenFileReply {
+  bytes content = 1;
+  bool isBsdiff = 2;
+  bytes crc = 3;
+}
+
+// 握手的header
+message ProtoHeader {
+  string version = 1;
+  string token = 2;
+  enum ServerKind {
+    UNKNOWN_SERVER_KIND = 0;
+    SERVER = 1;
+    CLIENT = 2;
+  }
+  enum ConnKind {
+    UNKNOWN_CONN_KIND = 0;
+    LISTEN = 1;
+    DIAL = 2;
+  }
+  ServerKind serverKind = 3;
+  ConnKind connKind = 4;
+}
