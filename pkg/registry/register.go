@@ -3,7 +3,8 @@ package registry
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	pb "github.com/wangkechun/vv/proto"
+	"github.com/wangkechun/vv/pkg/header"
+	pb "github.com/wangkechun/vv/pkg/proto"
 	"io"
 	"net"
 	"qiniupkg.com/x/log.v7"
@@ -21,9 +22,9 @@ func (r rpcConn) String() string {
 
 // Register 组件
 type Register struct {
-	mux        sync.RWMutex
+	mux        sync.Mutex
 	laddr      string
-	listenConn map[string]rpcConn
+	listenConn map[string][]rpcConn
 }
 
 // Config Register 配置
@@ -35,14 +36,39 @@ type Config struct {
 func New(cfg Config) *Register {
 	r := &Register{
 		laddr:      cfg.Addr,
-		listenConn: make(map[string]rpcConn),
+		listenConn: make(map[string][]rpcConn),
 	}
 	return r
 }
 
-// TODO: 如何管理关闭的连接
+func (r *Register) addConn(token string, conn rpcConn) {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+	s, ok := r.listenConn[token]
+	if ok {
+		s = append(s, conn)
+		r.listenConn[token] = s
+		return
+	}
+	r.listenConn[token] = []rpcConn{conn}
+	return
+}
+
+func (r *Register) getConn(token string) (conn *rpcConn, ok bool) {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+	s, ok := r.listenConn[token]
+	if !ok || len(s) == 0 {
+		return nil, false
+	}
+	first := s[0]
+	r.listenConn[token] = s[1:]
+	return &first, true
+}
+
+// TODO: 如何管理关闭超时的连接
 func (r *Register) handleConn(conn net.Conn) (err error) {
-	header, err := readHeader(conn)
+	header, err := header.ReadHeader(conn)
 	if err != nil {
 		return errors.Wrap(err, "registry: readHeader")
 	}
@@ -51,22 +77,15 @@ func (r *Register) handleConn(conn net.Conn) (err error) {
 	ConnKind := rpcConn.header.ConnKind
 	token := rpcConn.header.Token
 	if ConnKind == pb.ProtoHeader_LISTEN {
-		r.mux.Lock()
-		r.listenConn[token] = rpcConn
-		r.mux.Unlock()
+		r.addConn(token, rpcConn)
 	} else if ConnKind == pb.ProtoHeader_DIAL {
 		dialConn := rpcConn
-		r.mux.RLock()
-		listenConn, ok := r.listenConn[token]
-		r.mux.RUnlock()
+		listenConn, ok := r.getConn(token)
 		if !ok {
 			log.Warn("dial request not found listener, close", dialConn)
 			dialConn.conn.Close()
 			return
 		}
-		r.mux.Lock()
-		delete(r.listenConn, token)
-		r.mux.Unlock()
 		go io.Copy(dialConn.conn, listenConn.conn)
 		go io.Copy(listenConn.conn, dialConn.conn)
 		log.Info("connection create success", dialConn, "->", listenConn)

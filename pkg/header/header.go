@@ -1,16 +1,17 @@
-package registry
+package header
 
 import (
 	"encoding/binary"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	pb "github.com/wangkechun/vv/proto"
+	pb "github.com/wangkechun/vv/pkg/proto"
 	"net"
 )
 
 const maxHeaderSize = 1024
 
-func readHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
+// ReadHeader 从 tcp conn 读取握手 header
+func ReadHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	var dataLength uint32
 	err = binary.Read(conn, binary.BigEndian, &dataLength)
 	if err != nil {
@@ -35,7 +36,8 @@ func readHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	return h, nil
 }
 
-func writeHeader(conn net.Conn, h *pb.ProtoHeader) (err error) {
+// WriteHeader 写入读取握手 header 到 tcp conn
+func WriteHeader(conn net.Conn, h *pb.ProtoHeader) (err error) {
 	buf, err := proto.Marshal(h)
 	if err != nil {
 		return errors.Wrap(err, "writeHeader: proto.Marshal")

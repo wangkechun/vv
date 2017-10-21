@@ -1,8 +1,8 @@
-package registry
+package header
 
 import (
 	"github.com/stretchr/testify/assert"
-	pb "github.com/wangkechun/vv/proto"
+	pb "github.com/wangkechun/vv/pkg/proto"
 	"net"
 	"testing"
 )
@@ -10,13 +10,13 @@ import (
 func TestReadWriteHeader(t *testing.T) {
 	assert := assert.New(t)
 	server, client := net.Pipe()
-	go writeHeader(client, &pb.ProtoHeader{
+	go WriteHeader(client, &pb.ProtoHeader{
 		Version:    "1",
 		Token:      "123",
 		ServerKind: pb.ProtoHeader_CLIENT,
 		ConnKind:   pb.ProtoHeader_DIAL,
 	})
-	header, err := readHeader(server)
+	header, err := ReadHeader(server)
 	assert.Nil(err)
 	assert.Equal(header.Token, "123")
 }
