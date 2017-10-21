@@ -18,10 +18,13 @@ var serverStartCmd = &cobra.Command{
 			serverStartCmdCfg.Name, _ = os.Hostname()
 		}
 		serverStartCmdCfg.Name = "123456"
+		serverStartCmdCfg.RegistryAddrRPC = defaultRegistryRPC
+		serverStartCmdCfg.RegistryAddrTCP = defaultRegistryTCP
 		fmt.Printf("vv server [%s] started\n", serverStartCmdCfg.Name)
 		return server.New(serverStartCmdCfg.Config).Run()
 	},
 }
+
 var serverStartCmdCfg struct {
 	server.Config
 }
@@ -30,6 +33,4 @@ func init() {
 	serverCmd.AddCommand(serverStartCmd)
 	RootCmd.AddCommand(serverCmd)
 	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.Name, "name", "n", "", "server name, default is hostname")
-	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr, "registry_addr", "r", DefaultRegistry, "registry addr to connect")
-	serverStartCmd.Flags().StringVarP(&serverStartCmdCfg.RegistryAddr2, "registry_addr2", "R", DefaultRegistry2, "registry addr to connect")
 }

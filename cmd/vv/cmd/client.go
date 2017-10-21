@@ -18,6 +18,8 @@ var clientEditCmd = &cobra.Command{
 		if len(args) == 0 {
 			return errors.New("not file specified")
 		}
+		clientEditCmdCfg.RegistryAddrRPC = defaultRegistryRPC
+		clientEditCmdCfg.RegistryAddrTCP = defaultRegistryTCP
 		clientEditCmdCfg.FilePath = args[0]
 		if clientEditCmdCfg.Name == "" {
 			clientEditCmdCfg.Name, _ = os.Hostname()
@@ -34,5 +36,4 @@ func init() {
 	clientCmd.AddCommand(clientEditCmd)
 	RootCmd.AddCommand(clientCmd)
 	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.Name, "name", "n", "", "client name, default is hostname")
-	clientEditCmd.Flags().StringVarP(&clientEditCmdCfg.RegistryAddr, "registry_addr", "r", DefaultRegistry, "registry addr to connect")
 }

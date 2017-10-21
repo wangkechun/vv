@@ -29,13 +29,13 @@ type fileServer struct {
 
 // SayHello implements helloworld.GreeterServer
 func (s *fileServer) Ping(ctx context.Context, in *pb.PingRequest) (out *pb.PingReply, err error) {
-	log.Info("ping")
+	log.Info("recv Ping")
 	return &pb.PingReply{Name: s.name}, nil
 }
 
 func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFileServer) (err error) {
-	// TODO:更好的处理重名问题
-	log.Info("OpenFile")
+	log.Info("recv OpenFile")
+	// TODO:更好的处理文件重名问题
 	fileName := filepath.Join(os.TempDir(), in.FileName)
 	err = ioutil.WriteFile(fileName, in.Content, 0600)
 	if err != nil {
@@ -111,9 +111,9 @@ type Server struct {
 
 // Config Server 配置
 type Config struct {
-	RegistryAddr  string
-	RegistryAddr2 string
-	Name          string
+	RegistryAddrRPC string
+	RegistryAddrTCP string
+	Name            string
 }
 
 // New 返回一个Server
@@ -127,22 +127,18 @@ func (r *Server) Run() (err error) {
 	ctx := context.Background()
 	for {
 		func() error {
-			log.Info(".")
-			conn, err := grpc.Dial(r.cfg.RegistryAddr2, grpc.WithInsecure())
+			conn, err := grpc.Dial(r.cfg.RegistryAddrRPC, grpc.WithInsecure())
 			if err != nil {
 				return errors.Wrap(err, "dial error")
 			}
 			defer conn.Close()
 			c := pb.NewVvRegistryClient(conn)
-			log.Info(".")
 			stream, err := c.OpenListen(ctx, &pb.OpenListenRequest{User: r.cfg.Name})
-			log.Info(".")
 			if err != nil {
 				return errors.Wrap(err, "OpenListen")
 			}
 			for {
 				_, err := stream.Recv()
-				log.Info(".")
 				if err != nil {
 					return errors.Wrap(err, "stream.Recv")
 				}
@@ -152,8 +148,8 @@ func (r *Server) Run() (err error) {
 				s := grpc.NewServer()
 				pb.RegisterVvServerServer(s, srv)
 				reflection.Register(s)
-				log.Info("dial", r.cfg.RegistryAddr)
-				conn, err := net.Dial("tcp", r.cfg.RegistryAddr)
+				log.Info("dial", r.cfg.RegistryAddrTCP)
+				conn, err := net.Dial("tcp", r.cfg.RegistryAddrTCP)
 				if err != nil {
 					return errors.Wrap(err, "net.Dial")
 				}
@@ -161,13 +157,10 @@ func (r *Server) Run() (err error) {
 					ConnKind: pb.ProtoHeader_LISTEN,
 					User:     "123456",
 				})
-
-				log.Println(conn)
 				go func() {
-					err = s.Serve(&rlisten{conn: conn})
+					err = s.Serve(&listen{conn: conn})
 					if err != nil {
 						log.Error(err)
-						// return errors.Wrap(err, "failed to connect registry: serve")
 					}
 				}()
 			}

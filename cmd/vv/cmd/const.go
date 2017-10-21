@@ -1,4 +1,13 @@
 package cmd
 
-const DefaultRegistry = "127.0.0.1:6655"
-const DefaultRegistry2 = "127.0.0.1:6656"
+import "os"
+
+var defaultRegistryTCP = "evm.hi-hi.cn:6655"
+var defaultRegistryRPC = "evm.hi-hi.cn:6656"
+
+func init() {
+	if os.Getenv("TEST_VV") != "" {
+		defaultRegistryTCP = "127.0.0.1:6655"
+		defaultRegistryRPC = "127.0.0.1:6656"
+	}
+}

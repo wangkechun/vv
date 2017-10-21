@@ -16,7 +16,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"qiniupkg.com/x/log.v7"
 	"time"
 )
 
@@ -31,9 +30,10 @@ type Client struct {
 
 // Config Client 配置
 type Config struct {
-	RegistryAddr string
-	Name         string
-	FilePath     string
+	Name            string
+	FilePath        string
+	RegistryAddrTCP string
+	RegistryAddrRPC string
 }
 
 // New 返回一个Client
@@ -50,7 +50,8 @@ func (r *Client) Run() (err error) {
 		r.args.Dir = filepath.Dir(f)
 		r.stat, err = os.Stat(f)
 		if os.IsNotExist(err) {
-			file, err := os.Create(f)
+			var file *os.File
+			file, err = os.Create(f)
 			if err != nil {
 				return errors.Wrap(err, "create file failed")
 			}
@@ -68,7 +69,7 @@ func (r *Client) Run() (err error) {
 			return errors.Wrap(err, "open file failed")
 		}
 	}
-	conn, err := net.Dial("tcp", r.cfg.RegistryAddr)
+	conn, err := net.Dial("tcp", r.cfg.RegistryAddrTCP)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry")
 	}
@@ -83,20 +84,15 @@ func (r *Client) Run() (err error) {
 	}
 	ctx := context.Background()
 	var client pb.VvServerClient
-	for i := 0; i < 20; i++ {
-		log.Info("loop", i)
+	for i := 0; i < 5; i++ {
 		err := func() error {
-			log.Info("1")
 			gconn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithDialer(func(string, time.Duration) (net.Conn, error) {
 				return conn, nil
 			}))
-			log.Info("1")
 			client = pb.NewVvServerClient(gconn)
-			log.Info("1")
 			ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 			defer cancel()
 			pingReply, err := client.Ping(ctx, &pb.PingRequest{Name: r.cfg.Name})
-			log.Info("1")
 			if err != nil {
 				return errors.Wrap(err, "server reply")
 			}
@@ -107,7 +103,6 @@ func (r *Client) Run() (err error) {
 			break
 		}
 		if grpc.Code(errors.Cause(err)) == codes.Unavailable {
-			log.Info("continue")
 			continue
 		}
 		return err
