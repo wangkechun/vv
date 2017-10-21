@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"github.com/fsnotify/fsnotify"
+	"github.com/kr/binarydist"
 	"github.com/pkg/errors"
 	"github.com/wangkechun/vv/pkg/editor"
 	"github.com/wangkechun/vv/pkg/header"
@@ -20,6 +21,7 @@ import (
 	"time"
 )
 
+const splitFileSize = 1024 * 100
 const defaultConnectionNum = 1
 
 // server is used to implement helloworld.GreeterServer.
@@ -32,18 +34,49 @@ func (s *fileServer) Ping(ctx context.Context, in *pb.PingRequest) (out *pb.Ping
 	log.Info("recv Ping")
 	return &pb.PingReply{Name: s.name}, nil
 }
-
-func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFileServer) (err error) {
-	log.Info("recv OpenFile")
+func (s *fileServer) OpenFileStream(stream pb.VvServer_OpenFileStreamServer) (err error) {
+	log.Info("recv OpenFileStream")
 	// TODO:更好的处理文件重名问题
-	fileName := filepath.Join(os.TempDir(), in.FileName)
-	err = ioutil.WriteFile(fileName, in.Content, 0600)
+	msg, err := stream.Recv()
 	if err != nil {
-		return errors.New("write file")
+		return errors.Wrap(err, "stream.Recv")
 	}
-	defer os.Remove(fileName)
+	fileName := filepath.Join(os.TempDir(), msg.FileName)
+	fileWriter, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return errors.Wrap(err, "os.OpenFile")
+	}
+	defer fileWriter.Close()
+	_, err = fileWriter.Write(msg.Content)
+	if err != nil {
+		return errors.Wrap(err, "fileWriter.Write")
+	}
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			return errors.Wrap(err, "stream.Recv")
+		}
+		if msg.IsEnd {
+			break
+		}
+		_, err = fileWriter.Write(msg.Content)
+		if err != nil {
+			return errors.Wrap(err, "fileWriter.Write")
+		}
+	}
+	fileWriter.Close()
+	log.Info("recv split file success")
 
-	log.Info("write file", fileName)
+	defer os.Remove(fileName)
+	content, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return errors.Wrap(err, "ioutil.ReadFile")
+	}
+	s.openAndWatchFile(fileName, stream, content)
+	return
+}
+
+func (s *fileServer) openAndWatchFile(fileName string, stream pb.VvServer_OpenFileServer, content []byte) (err error) {
 	command := editor.Cmd(fileName)
 	log.Info("run", command)
 
@@ -70,7 +103,7 @@ func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFil
 	watcher.Add(fileName)
 	defer watcher.Close()
 
-	lastContnet := in.Content
+	lastContnet := content
 
 	for {
 		select {
@@ -87,21 +120,54 @@ func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFil
 				if bytes.Compare(lastContnet, buf) == 0 {
 					continue
 				}
-				lastContnet = buf
-				log.Infof("server, file %s change , push it", fileName)
-				err = stream.Send(&pb.OpenFileReply{
-					Content: lastContnet,
-				})
-				if err != nil {
-					log.Error("send file error", err)
-					return err
+				if len(buf) > splitFileSize {
+					// TODO: 大文件bsdiff很慢
+					patch := &bytes.Buffer{}
+					err = binarydist.Diff(bytes.NewReader(lastContnet), bytes.NewReader(buf), patch)
+					if err != nil {
+						return errors.Wrap(err, "binarydist.Diff")
+					}
+					log.Infof("server, file %s change , push diff, diff size: %d", fileName, len(patch.Bytes()))
+					err = stream.Send(&pb.OpenFileReply{
+						Content:  patch.Bytes(),
+						IsBsdiff: true,
+					})
+					if err != nil {
+						log.Error("send file error", err)
+						return err
+					}
+				} else {
+					lastContnet = buf
+					log.Infof("server, file %s change , push it", fileName)
+					err = stream.Send(&pb.OpenFileReply{
+						Content: lastContnet,
+					})
+					if err != nil {
+						log.Error("send file error", err)
+						return err
+					}
 				}
+
 			}
 		case err := <-watcher.Errors:
 			log.Error("watch file error", err)
 			return err
 		}
 	}
+}
+
+func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFileServer) (err error) {
+	log.Info("recv OpenFile")
+	// TODO:更好的处理文件重名问题
+	fileName := filepath.Join(os.TempDir(), in.FileName)
+	err = ioutil.WriteFile(fileName, in.Content, 0600)
+	if err != nil {
+		return errors.Wrap(err, "write file")
+	}
+	defer os.Remove(fileName)
+
+	log.Info("write file", fileName)
+	return s.openAndWatchFile(fileName, stream, in.Content)
 }
 
 // Server 组件
