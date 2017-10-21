@@ -5,9 +5,13 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 	"github.com/wangkechun/vv/editor"
+	"github.com/wangkechun/vv/header"
 	pb "github.com/wangkechun/vv/proto"
 	context "golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -90,5 +94,51 @@ func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFil
 			log.Error("watch file error", err)
 			return err
 		}
+	}
+}
+
+// Server 组件
+type Server struct {
+	cfg Config
+}
+
+// Config Server 配置
+type Config struct {
+	RegistryAddr string
+	Token        string
+	Name         string
+}
+
+// New 返回一个Server
+func New(cfg Config) *Server {
+	r := &Server{cfg: cfg}
+	return r
+}
+
+// Run 启动
+func (r *Server) Run() (err error) {
+	srv := &fileServer{
+		name: r.cfg.Name,
+	}
+	s := grpc.NewServer()
+	pb.RegisterVvServerServer(s, srv)
+	reflection.Register(s)
+	conn, err := net.Dial("tcp", "127.0.0.1:5566")
+	ce(header.WriteHeader(conn, &pb.ProtoHeader{
+		Version:    "1",
+		Token:      r.cfg.Token,
+		ServerKind: pb.ProtoHeader_SERVER,
+		ConnKind:   pb.ProtoHeader_LISTEN,
+	}))
+	ce(err)
+	lis, err := newListener(&conn)
+	ce(err)
+	ce(s.Serve(lis))
+	return nil
+}
+
+func ce(err error) {
+	if err != nil {
+		log.Panicln(err)
 	}
 }
