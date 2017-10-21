@@ -7,6 +7,7 @@ import (
 	"github.com/wangkechun/vv/editor"
 	"github.com/wangkechun/vv/header"
 	pb "github.com/wangkechun/vv/proto"
+	"github.com/wangkechun/vv/token"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -105,7 +106,6 @@ type Server struct {
 // Config Server 配置
 type Config struct {
 	RegistryAddr string
-	Token        string
 	Name         string
 }
 
@@ -123,22 +123,26 @@ func (r *Server) Run() (err error) {
 	s := grpc.NewServer()
 	pb.RegisterVvServerServer(s, srv)
 	reflection.Register(s)
-	conn, err := net.Dial("tcp", "127.0.0.1:5566")
-	ce(header.WriteHeader(conn, &pb.ProtoHeader{
+	conn, err := net.Dial("tcp", r.cfg.RegistryAddr)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect registry")
+	}
+	err = header.WriteHeader(conn, &pb.ProtoHeader{
 		Version:    "1",
-		Token:      r.cfg.Token,
+		Token:      token.GetServerToken(),
 		ServerKind: pb.ProtoHeader_SERVER,
 		ConnKind:   pb.ProtoHeader_LISTEN,
-	}))
-	ce(err)
-	lis, err := newListener(&conn)
-	ce(err)
-	ce(s.Serve(lis))
-	return nil
-}
-
-func ce(err error) {
+	})
 	if err != nil {
-		log.Panicln(err)
+		return errors.Wrap(err, "failed to connect registry: write header")
 	}
+	lis, err := newListener(&conn)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect registry: new listener")
+	}
+	err = s.Serve(lis)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect registry: serve")
+	}
+	return nil
 }
