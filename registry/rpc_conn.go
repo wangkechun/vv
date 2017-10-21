@@ -21,7 +21,7 @@ func (r rpcConn) String() string {
 
 // Register 组件
 type Register struct {
-	sync.RWMutex
+	mux        sync.RWMutex
 	laddr      string
 	listenConn map[string]rpcConn
 }
@@ -51,22 +51,22 @@ func (r *Register) handleConn(conn net.Conn) (err error) {
 	ConnKind := rpcConn.header.ConnKind
 	token := rpcConn.header.Token
 	if ConnKind == pb.ProtoHeader_LISTEN {
-		r.Lock()
+		r.mux.Lock()
 		r.listenConn[token] = rpcConn
-		r.Unlock()
+		r.mux.Unlock()
 	} else if ConnKind == pb.ProtoHeader_DIAL {
 		dialConn := rpcConn
-		r.RLock()
+		r.mux.RLock()
 		listenConn, ok := r.listenConn[token]
-		r.RUnlock()
+		r.mux.RUnlock()
 		if !ok {
 			log.Warn("dial request not found listener, close", dialConn)
 			dialConn.conn.Close()
 			return
 		}
-		r.Lock()
+		r.mux.Lock()
 		delete(r.listenConn, token)
-		r.Unlock()
+		r.mux.Unlock()
 		go io.Copy(dialConn.conn, listenConn.conn)
 		go io.Copy(listenConn.conn, dialConn.conn)
 		log.Info("connection create success", dialConn, "->", listenConn)
@@ -74,7 +74,8 @@ func (r *Register) handleConn(conn net.Conn) (err error) {
 	return
 }
 
-func (r *Register) start() (err error) {
+// Run 启动
+func (r *Register) Run() (err error) {
 	ln, err := net.Listen("tcp", r.laddr)
 	if err != nil {
 		return errors.Wrap(err, "registry: net.Listen")
