@@ -5,19 +5,19 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 	"github.com/wangkechun/vv/editor"
-	"github.com/wangkechun/vv/header"
 	pb "github.com/wangkechun/vv/proto"
-	"github.com/wangkechun/vv/token"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"io/ioutil"
-	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"qiniupkg.com/x/log.v7"
 )
+
+const defaultConnectionNum = 5
 
 // server is used to implement helloworld.GreeterServer.
 type fileServer struct {
@@ -26,7 +26,7 @@ type fileServer struct {
 
 // SayHello implements helloworld.GreeterServer
 func (s *fileServer) Ping(ctx context.Context, in *pb.PingRequest) (out *pb.PingReply, err error) {
-	return &pb.PingReply{Name: in.Name}, nil
+	return &pb.PingReply{Name: s.name}, nil
 }
 
 func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFileServer) (err error) {
@@ -70,10 +70,11 @@ func (s *fileServer) OpenFile(in *pb.OpenFileRequest, stream pb.VvServer_OpenFil
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.New("editor or client closed")
+			return grpc.Errorf(codes.Aborted, "editor or client closed")
 		case event := <-watcher.Events:
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				log.Println("modified file:", event.Name)
+				// TODO: bsdiff 支持
 				buf, err := ioutil.ReadFile(fileName)
 				if err != nil {
 					return errors.Wrap(err, "read file error")
@@ -123,24 +124,9 @@ func (r *Server) Run() (err error) {
 	s := grpc.NewServer()
 	pb.RegisterVvServerServer(s, srv)
 	reflection.Register(s)
-	conn, err := net.Dial("tcp", r.cfg.RegistryAddr)
-	if err != nil {
-		return errors.Wrap(err, "failed to connect registry")
-	}
-	err = header.WriteHeader(conn, &pb.ProtoHeader{
-		Version:    "1",
-		Token:      token.GetServerToken(),
-		ServerKind: pb.ProtoHeader_SERVER,
-		ConnKind:   pb.ProtoHeader_LISTEN,
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to connect registry: write header")
-	}
-	lis, err := newListener(&conn)
-	if err != nil {
-		return errors.Wrap(err, "failed to connect registry: new listener")
-	}
-	err = s.Serve(lis)
+	pool := newPool(r.cfg, defaultConnectionNum)
+
+	err = s.Serve(&pool)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect registry: serve")
 	}
