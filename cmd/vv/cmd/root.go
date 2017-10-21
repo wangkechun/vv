@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -27,10 +28,20 @@ var RootCmd = &cobra.Command{
 func Execute() {
 	if len(os.Args) == 2 {
 		switch os.Args[1] {
-		case "client", "help", "server", "register":
+		case "client", "help", "server", "register", "password":
 		default:
 			os.Args = []string{os.Args[0], "client", "edit", os.Args[1]}
 		}
+	}
+	if viper.Get(keyUsername) == nil || viper.Get(keyPassword) == nil {
+		hostName, _ := os.Hostname()
+		if hostName == "" {
+			hostName = "unknow"
+		}
+		password := uuid.NewUUID().String()
+		viper.Set(keyUsername, hostName)
+		viper.Set(keyPassword, password)
+
 	}
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -59,8 +70,10 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		fmt.Println("ReadInConfig error", viper.ConfigFileUsed())
+		os.Exit(1)
 	}
 }
