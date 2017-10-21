@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
-	"strings"
 )
 
 var cfgFile string
@@ -26,10 +25,6 @@ var RootCmd = &cobra.Command{
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		if strings.Contains(err.Error(), "unknown command") && len(os.Args) == 2 {
-			os.Args = []string{os.Args[0], "client", "edit", os.Args[1]}
-			err = RootCmd.Execute()
-		}
 		fmt.Println(err)
 		os.Exit(1)
 	}
