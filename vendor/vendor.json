@@ -58,6 +58,12 @@
 			"revisionTime": "2017-10-05T17:02:12Z"
 		},
 		{
+			"checksumSHA1": "40vJyUB4ezQSn/NSadsKEOrudMc=",
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T20:07:13Z"
+		},
+		{
 			"checksumSHA1": "1jQqVXhudkipVvVyTc3har4P2KU=",
 			"path": "github.com/kr/binarydist",
 			"revision": "3035450ff8b987ec4373f65c40767f096b35f2d2",
@@ -75,6 +81,12 @@
 			"path": "github.com/pmezard/go-difflib/difflib",
 			"revision": "890a5c3458b43e6104ff5da8dfa139d013d77544",
 			"revisionTime": "2017-07-05T02:17:15Z"
+		},
+		{
+			"checksumSHA1": "2ZKNmXsvO5DvWgsSHEXqI0lbbew=",
+			"path": "github.com/spf13/cobra",
+			"revision": "7b2c5ac9fc04fc5efafb60700713d4fa609b777b",
+			"revisionTime": "2017-10-12T18:25:33Z"
 		},
 		{
 			"checksumSHA1": "mGbTYZ8dHVTiPTTJu3ktp+84pPI=",
