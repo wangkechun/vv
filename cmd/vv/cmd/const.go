@@ -4,6 +4,7 @@ import "os"
 
 var defaultRegistryTCP = "evm.hi-hi.cn:6655"
 var defaultRegistryRPC = "evm.hi-hi.cn:6656"
+var defaultName = "hello"
 
 func init() {
 	if os.Getenv("TEST_VV") != "" {

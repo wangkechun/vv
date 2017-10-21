@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/wangkechun/vv/pkg/client"
-	"os"
 )
 
 var clientCmd = &cobra.Command{
@@ -22,7 +21,7 @@ var clientEditCmd = &cobra.Command{
 		clientEditCmdCfg.RegistryAddrTCP = defaultRegistryTCP
 		clientEditCmdCfg.FilePath = args[0]
 		if clientEditCmdCfg.Name == "" {
-			clientEditCmdCfg.Name, _ = os.Hostname()
+			clientEditCmdCfg.Name = defaultName
 		}
 		fmt.Printf("vv client [%s] started\n", clientEditCmdCfg.Name)
 		return client.New(clientEditCmdCfg.Config).Run()

@@ -127,6 +127,7 @@ func (r *Server) Run() (err error) {
 	ctx := context.Background()
 	for {
 		func() error {
+			log.Info("connecting to", r.cfg.RegistryAddrRPC)
 			conn, err := grpc.Dial(r.cfg.RegistryAddrRPC, grpc.WithInsecure())
 			if err != nil {
 				return errors.Wrap(err, "dial error")
@@ -138,6 +139,7 @@ func (r *Server) Run() (err error) {
 				return errors.Wrap(err, "OpenListen")
 			}
 			for {
+				log.Info("connecting success")
 				_, err := stream.Recv()
 				if err != nil {
 					return errors.Wrap(err, "stream.Recv")
