@@ -17,7 +17,7 @@ import (
 	"qiniupkg.com/x/log.v7"
 )
 
-const defaultConnectionNum = 5
+const defaultConnectionNum = 3
 
 // server is used to implement helloworld.GreeterServer.
 type fileServer struct {

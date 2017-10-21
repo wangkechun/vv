@@ -26,5 +26,5 @@ var registerStartCmdCfg struct {
 func init() {
 	registerCmd.AddCommand(registerStartCmd)
 	RootCmd.AddCommand(registerCmd)
-	registerStartCmd.Flags().StringVarP(&registerStartCmdCfg.addr, "addr", "A", "127.0.0.1:6655", "")
+	registerStartCmd.Flags().StringVarP(&registerStartCmdCfg.addr, "addr", "A", "0.0.0.0:6655", "")
 }
