@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/wangkechun/vv/server"
+	"github.com/wangkechun/vv/pkg/server"
 	"os"
 )
 

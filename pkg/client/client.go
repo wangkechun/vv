@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/kr/binarydist"
 	"github.com/pkg/errors"
-	"github.com/wangkechun/vv/header"
-	pb "github.com/wangkechun/vv/proto"
-	"github.com/wangkechun/vv/token"
+	"github.com/wangkechun/vv/pkg/header"
+	pb "github.com/wangkechun/vv/pkg/proto"
+	"github.com/wangkechun/vv/pkg/token"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-const MaxEditFileSize = 20 * 1024 * 1024
+const maxEditFileSize = 20 * 1024 * 1024
 
 // Client 组件
 type Client struct {
@@ -59,8 +59,8 @@ func (r *Client) Run() (err error) {
 		if err != nil {
 			return errors.Wrap(err, "stat file failed")
 		}
-		if r.stat.Size() > MaxEditFileSize {
-			return errors.Errorf("file size > %dMB", MaxEditFileSize/1024/1024)
+		if r.stat.Size() > maxEditFileSize {
+			return errors.Errorf("file size > %dMB", maxEditFileSize/1024/1024)
 		}
 		r.args.Content, err = ioutil.ReadFile(f)
 		if err != nil {

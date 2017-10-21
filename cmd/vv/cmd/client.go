@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/wangkechun/vv/client"
+	"github.com/wangkechun/vv/pkg/client"
 	"os"
 )
 

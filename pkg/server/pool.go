@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/pkg/errors"
-	"github.com/wangkechun/vv/header"
-	pb "github.com/wangkechun/vv/proto"
-	"github.com/wangkechun/vv/token"
+	"github.com/wangkechun/vv/pkg/header"
+	pb "github.com/wangkechun/vv/pkg/proto"
+	"github.com/wangkechun/vv/pkg/token"
 	"net"
 	"qiniupkg.com/x/log.v7"
 )

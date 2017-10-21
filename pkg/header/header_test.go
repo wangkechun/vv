@@ -2,7 +2,7 @@ package header
 
 import (
 	"github.com/stretchr/testify/assert"
-	pb "github.com/wangkechun/vv/proto"
+	pb "github.com/wangkechun/vv/pkg/proto"
 	"net"
 	"testing"
 )

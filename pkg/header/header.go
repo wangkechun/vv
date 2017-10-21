@@ -4,12 +4,13 @@ import (
 	"encoding/binary"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	pb "github.com/wangkechun/vv/proto"
+	pb "github.com/wangkechun/vv/pkg/proto"
 	"net"
 )
 
 const maxHeaderSize = 1024
 
+// ReadHeader 从 tcp conn 读取握手 header
 func ReadHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	var dataLength uint32
 	err = binary.Read(conn, binary.BigEndian, &dataLength)
@@ -35,6 +36,7 @@ func ReadHeader(conn net.Conn) (h *pb.ProtoHeader, err error) {
 	return h, nil
 }
 
+// WriteHeader 写入读取握手 header 到 tcp conn
 func WriteHeader(conn net.Conn, h *pb.ProtoHeader) (err error) {
 	buf, err := proto.Marshal(h)
 	if err != nil {
