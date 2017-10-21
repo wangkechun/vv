@@ -25,6 +25,13 @@ var RootCmd = &cobra.Command{
 
 // Execute ...
 func Execute() {
+	if len(os.Args) == 2 {
+		switch os.Args[1] {
+		case "client", "help", "server", "register":
+		default:
+			os.Args = []string{os.Args[0], "client", "edit", os.Args[1]}
+		}
+	}
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
