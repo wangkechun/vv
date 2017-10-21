@@ -57,6 +57,24 @@
 			"revisionTime": "2017-08-16T00:15:14Z"
 		},
 		{
+			"checksumSHA1": "MevDqYuHTr9QmEMOroO87r1Sm0w=",
+			"path": "github.com/hanwen/go-fuse/fuse",
+			"revision": "cf21bc21cac77db799fff95d80e717908e6356a5",
+			"revisionTime": "2017-10-20T12:48:49Z"
+		},
+		{
+			"checksumSHA1": "aWK+ZT8+Xh5XvHnXRlExrjoa48I=",
+			"path": "github.com/hanwen/go-fuse/fuse/nodefs",
+			"revision": "cf21bc21cac77db799fff95d80e717908e6356a5",
+			"revisionTime": "2017-10-20T12:48:49Z"
+		},
+		{
+			"checksumSHA1": "LGZoiRA8d9hxjq6srm8u+dGcIto=",
+			"path": "github.com/hanwen/go-fuse/splice",
+			"revision": "cf21bc21cac77db799fff95d80e717908e6356a5",
+			"revisionTime": "2017-10-20T12:48:49Z"
+		},
+		{
 			"checksumSHA1": "SJIgBfV02h1fsqCAe5DHj/JbHoM=",
 			"path": "github.com/hashicorp/hcl",
 			"revision": ""
