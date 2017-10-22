@@ -1,6 +1,8 @@
 # vv
 vv 编辑器
 
+[![Build Status](https://travis-ci.org/wangkechun/vv.svg?branch=master)](https://travis-ci.org/wangkechun/vv)
+
 ## 项目简介：
 
 该项目旨在为经常在服务器、虚拟机、docker容器中修改代码或者配置文件的小伙伴提供本地coding新体验。
