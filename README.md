@@ -4,6 +4,9 @@
 [![Build Status](https://travis-ci.org/wangkechun/vv.svg?branch=master)](https://travis-ci.org/wangkechun/vv)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wangkechun/vv)](https://goreportcard.com/report/github.com/wangkechun/vv)
 
+# 视频展示
+![单文件编辑](https://qs.hi-hi.cn/wangkechun/vv/doc/single.gif)
+
 ## 项目简介：
 
 该项目旨在为经常在服务器、虚拟机、docker容器中修改代码或者配置文件的小伙伴提供本地coding新体验。
