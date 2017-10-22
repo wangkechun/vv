@@ -135,6 +135,7 @@ func (r *Register) handleConn(conn net.Conn) (err error) {
 	return
 }
 
+// OpenListen 监听客户端请求，如果有配对的客户端连上registry，会发送通知
 func (r *Register) OpenListen(in *pb.OpenListenRequest, stream pb.VvRegistry_OpenListenServer) (err error) {
 	log.Info("open listen", in.User)
 	var ch chan struct{}
