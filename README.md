@@ -31,6 +31,7 @@ vv+ ‘filename’，你盯着的那个文件已经在你最喜欢的编辑器�
 - google.golang.org/grpc grpc、protobuf
 - github.com/kr/binarydist  bsdiff 的 go 语言实现
 - github.com/spf13/cobra CLI 界面
+- github.com/hanwen/go-fuse/fuse go-fuse
 
 ## 技术实现
 
