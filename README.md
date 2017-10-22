@@ -32,7 +32,14 @@ vv+ ‘filename’，你盯着的那个文件已经在你最喜欢的编辑器�
 - github.com/kr/binarydist  bsdiff 的 go 语言实现
 - github.com/spf13/cobra CLI 界面
 
-## p2p 数据传输实现
+## 技术实现
+
+### 目录挂载实现
+
+### 增量传输实现
+
+### p2p 数据传输实现
+
 测试过 https://github.com/vzex/dog-tunnel 这种 udp 打洞的方式，不过实测下来稳定性不够，某些网络不能成功连接。
 
 于是改为尝试 frp 这种中间服务器中转的模式。
