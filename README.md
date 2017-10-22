@@ -59,5 +59,5 @@ B -> 中转服务器
 
 A 和 B 配对成功了就可以随意通信了， 然后直接使用 grpc， 可以很方便的双向通信。
 
-虽然 grpc 是需要一些hack的，正常是一个 server 负责 listen，一个 client 负责 dial。 这里实际上两边都是 dial， 需要自定义一个 listen， 如果成功建立一条到 B 的连接，则 Accept 一个连接给 grpc。 
+grpc 正常使用是需要一些hack的，正常是一个 server 负责 listen，一个 client 负责 dial。 这里实际上两边都是 dial， 需要自定义一个 listen， 如果成功建立一条到 B 的连接，则 Accept 一个连接给 grpc。 
 
