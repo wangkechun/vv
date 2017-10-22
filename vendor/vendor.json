@@ -125,6 +125,12 @@
 			"revision": ""
 		},
 		{
+			"checksumSHA1": "cJE7dphDlam/i7PhnsyosNWtbd4=",
+			"path": "github.com/mattn/go-runewidth",
+			"revision": "97311d9f7767e3d6f422ea06661bc2c7a19e8a5d",
+			"revisionTime": "2017-05-10T07:48:58Z"
+		},
+		{
 			"checksumSHA1": "AXacfEchaUqT5RGmPmMXsOWRhv8=",
 			"path": "github.com/mitchellh/go-homedir",
 			"revision": ""
@@ -132,6 +138,11 @@
 		{
 			"checksumSHA1": "KCJhN9Dx329wAN/SeL4CxeypPyk=",
 			"path": "github.com/mitchellh/mapstructure",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "mhvIMH8oAtOiEyg37zWKmgb+6v4=",
+			"path": "github.com/pborman/uuid",
 			"revision": ""
 		},
 		{
@@ -353,6 +364,12 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "7db1564ba1229bc42919bb1f6d9c4186f3aa8678",
 			"revisionTime": "2017-08-24T17:08:43Z"
+		},
+		{
+			"checksumSHA1": "Omo/Z5hYCGVrR6tDwoJWUCSQgNg=",
+			"path": "gopkg.in/cheggaaa/pb.v1",
+			"revision": "657164d0228d6bebe316fdf725c69f131a50fb10",
+			"revisionTime": "2017-08-24T10:41:20Z"
 		},
 		{
 			"checksumSHA1": "CPHUrpTG/aFe3czKUifo/8I8PIo=",

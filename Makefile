@@ -1,4 +1,4 @@
-lint:
+check:
 	go install ./pkg/...
 	go install ./cmd/...
 
@@ -15,4 +15,4 @@ lint:
 gen_proto:
 	protoc --go_out=plugins=grpc:. pkg/proto/vv.proto
 
-.PHONY: gen_proto
+.PHONY: gen_proto check
