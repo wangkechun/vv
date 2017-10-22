@@ -1,5 +1,5 @@
-# vv
-vv 编辑器
+# vv 编辑器
+![vv logo](https://raw.githubusercontent.com/wangkechun/vv/master/doc/icon.png)
 
 [![Build Status](https://travis-ci.org/wangkechun/vv.svg?branch=master)](https://travis-ci.org/wangkechun/vv)
 
