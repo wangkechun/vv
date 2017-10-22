@@ -5,9 +5,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/wangkechun/vv)](https://goreportcard.com/report/github.com/wangkechun/vv)
 
 # 视频展示
-![单文件编辑](https://qs.hi-hi.cn/wangkechun/vv/doc/single.gif)
-![大文件增量传输](https://qs.hi-hi.cn/wangkechun/vv/doc/bigfile.gif)
-![fuse挂载直接编辑远程目录](https://qs.hi-hi.cn/wangkechun/vv/doc/dir.gif)
+- ![单文件编辑](https://qs.hi-hi.cn/wangkechun/vv/doc/single.gif)
+- https://qs.hi-hi.cn/wangkechun/vv/doc/bigfile.gif
+- https://qs.hi-hi.cn/wangkechun/vv/doc/dir.gif
 
 ## 项目简介：
 
