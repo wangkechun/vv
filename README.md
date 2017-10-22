@@ -6,8 +6,9 @@
 
 # 视频展示
 - ![单文件编辑](https://qs.hi-hi.cn/wangkechun/vv/doc/single.gif)
-- https://qs.hi-hi.cn/wangkechun/vv/doc/bigfile.gif
-- https://qs.hi-hi.cn/wangkechun/vv/doc/dir.gif
+- [大文件增量传输-点击查看](https://qs.hi-hi.cn/wangkechun/vv/doc/bigfile.gif)
+- [fuse编辑远程目录-点击查看](https://qs.hi-hi.cn/wangkechun/vv/doc/dir.gif)
+
 
 ## 项目简介：
 
