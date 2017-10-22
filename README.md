@@ -2,6 +2,7 @@
 ![vv logo](https://raw.githubusercontent.com/wangkechun/vv/master/doc/icon.png)
 
 [![Build Status](https://travis-ci.org/wangkechun/vv.svg?branch=master)](https://travis-ci.org/wangkechun/vv)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wangkechun/vv)](https://goreportcard.com/report/github.com/wangkechun/vv)
 
 ## 项目简介：
 
